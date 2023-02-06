@@ -1,8 +1,43 @@
-import type { NextPage } from 'next'
+// import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
+import config from './config.js';
+import MessageParser from './MessageParser';
+import ActionProvider from './ActionProvider';
+import Chatbot from 'react-chatbot-kit'
+import 'react-chatbot-kit/build/main.css'
+import {RiMessage3Fill, RiCloseCircleFill} from "react-icons/ri"
+import React, { useState, useEffect } from 'react';
+import {saveMessages, loadMessages } from '../utils/chatHistory'
+const Home = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [response, setResponse] = useState('');
 
-const Home: NextPage = () => {
+const handleUserInput = async (input) => {
+  // Call the GPT-3 API with the user input
+  const result = await fetch(`https://api.openai.com/v1/engines/gpt-3/jobs`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer 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`
+    },
+    body: JSON.stringify({
+      prompt: input,
+      max_tokens: 100,
+      temperature: 0.5,
+    })
+  });
+  const json = await result.json();
+
+  // Update the chatbot state with the generated response
+  setResponse(json.choices[0].text);
+};
+
+
+  const handleClick = () => {
+    setIsOpen(!isOpen);
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
       <Head>
@@ -79,6 +114,23 @@ const Home: NextPage = () => {
           <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
         </a>
       </footer>
+      <div className='fixed right-4 bottom-4 z-20' onClick={handleClick}>
+        {isOpen ? <RiCloseCircleFill size={50} /> : <RiMessage3Fill size={50}  />}
+      
+      </div>
+      <div  className={`fixed right-4 bottom-20  ${isOpen ? '' : 'hidden'}`}>
+      <Chatbot 
+        config={config}
+        messageParser={MessageParser}
+        actionProvider={ActionProvider}
+        // handleUserInput={handleUserInput}
+      // response={response}
+      headerText='Chatbot'
+  placeholderText='Input placeholder'
+      messageHistory={loadMessages}
+          saveMessages={saveMessages}
+      />
+    </div>
     </div>
   )
 }
