@@ -5,7 +5,7 @@ import config from './config.js';
 import MessageParser from './MessageParser';
 import ActionProvider from './ActionProvider';
 import Chatbot from 'react-chatbot-kit'
-import 'react-chatbot-kit/build/main.css'
+
 import {RiMessage3Fill, RiCloseCircleFill} from "react-icons/ri"
 import React, { useState, useEffect } from 'react';
 import {saveMessages, loadMessages } from '../utils/chatHistory'

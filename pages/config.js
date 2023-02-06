@@ -16,7 +16,7 @@ const config = {
   ],
   customComponents: {},
   customMessages: {
-    custom: (props) => <CustomMessage {...props} />,
+    custom: (props) => <CustomMessage {...props}/>,
   },
   widgets: [
     {
@@ -29,14 +29,6 @@ const config = {
     },
   ],
   botName: botName,
-  customStyles: {
-    botMessageBox: {
-      backgroundColor: '#376B7E',
-    },
-    chatButton: {
-      backgroundColor: '#5ccc9d',
-    },
-  },
   customComponents: {
     // Replaces the default header
   //  header: () => <div style={{ backgroundColor: 'red', padding: "5px", borderRadius: "3px" }}>This is the header</div>,

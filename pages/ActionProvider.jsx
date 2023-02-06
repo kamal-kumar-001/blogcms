@@ -2,6 +2,7 @@
 import React from 'react';
 import axios from 'axios';
 import { createCustomMessage } from 'react-chatbot-kit';
+// import CustomMessage from './customMessage';
 
 const ActionProvider = ({ createChatBotMessage, setState, children }) => {
   const handleHello = () => {
@@ -27,8 +28,10 @@ const ActionProvider = ({ createChatBotMessage, setState, children }) => {
   };
   const handleAi = async (message) => {
         const response = await axios.post('/api/gpt', { prompt: message })
-        const botMessage = createChatBotMessage(response.data);
-        // const botMessage = createCustomMessage(message=(response), 'custom');
+        const botResponse = response.data;
+        const botMessage = createChatBotMessage(
+          <div dangerouslySetInnerHTML={{ __html: botResponse }}></div>
+          );
 
     setState((prev) => ({
       ...prev,
@@ -36,13 +39,14 @@ const ActionProvider = ({ createChatBotMessage, setState, children }) => {
     }));
   };
   const handleCustom = () => {
-    const botMessage = createCustomMessage('hi', 'custom');
+    const botMessage = createCustomMessage("botResponse", 'custom');
 
     setState((prev) => ({
       ...prev,
       messages: [...prev.messages, botMessage],
     }));
   };
+  
 
   
 
