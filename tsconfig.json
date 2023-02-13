@@ -15,6 +15,6 @@
     "jsx": "preserve",
     "incremental": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "pages/config.js", "pages/index.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "components/chat/config.js", "pages/index.js", "pages/api/articles/add.js", "models/blog.js", "pages/add.js", "pages/api/image.js", "components/RichTextEditor.js"],
   "exclude": ["node_modules"]
 }

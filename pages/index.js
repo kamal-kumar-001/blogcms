@@ -1,138 +1,153 @@
-// import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
-import config from './config.js';
-import MessageParser from './MessageParser';
-import ActionProvider from './ActionProvider';
-import Chatbot from 'react-chatbot-kit'
-
-import {RiMessage3Fill, RiCloseCircleFill} from "react-icons/ri"
 import React, { useState, useEffect } from 'react';
-import {saveMessages, loadMessages } from '../utils/chatHistory'
-const Home = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [response, setResponse] = useState('');
+import axios from 'axios';
+import Link from 'next/link';
+import Router from 'next/router';
+const sqlite3 = require('sqlite3').verbose();
 
-const handleUserInput = async (input) => {
-  // Call the GPT-3 API with the user input
-  const result = await fetch(`https://api.openai.com/v1/engines/gpt-3/jobs`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer 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`
-    },
-    body: JSON.stringify({
-      prompt: input,
-      max_tokens: 100,
-      temperature: 0.5,
-    })
-  });
-  const json = await result.json();
+const Home = ({ blogs, categories }) => {
 
-  // Update the chatbot state with the generated response
-  setResponse(json.choices[0].text);
-};
+  // useEffect(() => {
+  //   const fetchBlogs = async () => {
+  //     const res = await axios.get("http://localhost:3000/api/getBlogs");
+  //     setBlogs(res.data.blogs);
+  //   };
 
+  //   fetchBlogs();
+  // }, []);
 
-  const handleClick = () => {
-    setIsOpen(!isOpen);
-  }
+  // const [blogData, setBlogs] = useState([]);
+
+  const handleDelete = async (id) => {
+    const res = await fetch(`/api/deleteApi?id=${id}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      console.log(data.message);
+      Router.push('/');
+    } else {
+      console.error(data.message);
+    }
+  };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-2">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <div>
+      <Link href={"/blog"}>
+        <button className="m-4 bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded">
+          Add Blog
+        </button>
+      </Link>
+      <Link href={"/addCategory"}>
+        <button className="m-4 bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded">
+          Add Category
+        </button>
+      </Link>
+      <Link href={"/addUser"}>
+        <button className="m-4 bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded">
+          Add User
+        </button>
+      </Link>
+      <table className="table-auto w-full text-left">
+        <thead className="bg-gray-800 text-white">
+          <tr>
+            <th className="px-4 py-2">Title</th>
+            <th className="px-4 py-2">Category</th>
+            <th className="px-4 py-2">Author</th>
+            <th className="px-4 py-2">Image</th>
+            <th className="px-4 py-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {blogs.map((blog) => (
+            <tr key={blog.id} className="border-t border-gray-700">
+              <td className="px-4 py-2">{blog.title}</td>
+              {/* <td className="px-4 py-2">{blog.body}</td> */}
+              <td className="px-4 py-2">
+                {
+                  blog.category_ids.split(",").map(id => {
+                    const category = categories.find(category => category.id === parseInt(id));
+                    return (
+                      <span style={{ color: `${category.color}`}} className='mx-2' key={parseInt(id)}>
+                        {category ? category.name : "Unknown"}
+                      </span>
+                    )
+                  })
+                }
+              </td>
+              <td className="px-4 py-2">{blog.user_name}</td>
+              <td className="px-4 py-2 w-10">
+                <img src={`/images/${blog.image}`} alt={blog.title} /></td>
+              <td className="px-4 py-2">
+                <Link href={"/"}>
+                  <button className="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded">
+                    Update
+                  </button>
+                </Link>
+                <button className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded ml-2"
+                  onClick={() => handleDelete(blog.id)}
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-      <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
-
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="rounded-md bg-gray-100 p-3 font-mono text-lg">
-            pages/index.tsx
-          </code>
-        </p>
-
-        <div className="mt-6 flex max-w-4xl flex-wrap items-center justify-around sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and its API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className="flex h-24 w-full items-center justify-center border-t">
-        <a
-          className="flex items-center justify-center gap-2"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-        </a>
-      </footer>
-      <div className='fixed right-4 bottom-4 z-20' onClick={handleClick}>
-        {isOpen ? <RiCloseCircleFill size={50} /> : <RiMessage3Fill size={50}  />}
-      
+      <div className='bottom-5 right-5 fixed'>
+      {/* <iframe width="350" height="430" allow="microphone;" src="https://console.dialogflow.com/api-client/demo/embedded/450670e1-8be1-4635-8543-7def3131ceff"></iframe> */}
       </div>
-      <div  className={`fixed right-4 bottom-20  ${isOpen ? '' : 'hidden'}`}>
-      <Chatbot 
-        config={config}
-        messageParser={MessageParser}
-        actionProvider={ActionProvider}
-        // handleUserInput={handleUserInput}
-      // response={response}
-      headerText='Chatbot'
-  placeholderText='Input placeholder'
-      messageHistory={loadMessages}
-          saveMessages={saveMessages}
-      />
     </div>
-    </div>
-  )
-}
+  );
+};
+// export async function getServerSideProps() {
+//   const response = await axios.get('http://localhost:3000/api/getBlogs');
+//   const blogs = response.data.blogs;
 
-export default Home
+//   return {
+//     props: {
+//       blogs,
+//     },
+//   };
+// }
+export async function getServerSideProps(context) {
+
+  const db = new sqlite3.Database('./database/mydb.db', (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+  });
+  const categories = await new Promise((resolve, reject) => {
+    db.all('SELECT * FROM categories', (err, rows) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(rows);
+    });
+  });
+  const blogs = await new Promise((resolve, reject) => {
+    db.all(`
+    SELECT blogs.*, 
+  GROUP_CONCAT(categories.name) as category_names, 
+  users.name as user_name 
+  FROM blogs 
+    INNER JOIN users ON blogs.user_id = users.id
+    INNER JOIN blog_categories ON blogs.id = blog_categories.blog_id
+    INNER JOIN categories ON blog_categories.category_id = categories.id 
+    GROUP BY blogs.id
+    `, (err, rows) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(rows);
+    });
+  });
+  return {
+    props: {
+      categories,
+      blogs,
+    },
+  };
+}
+export default Home;
